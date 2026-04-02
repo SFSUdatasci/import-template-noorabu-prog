@@ -1,0 +1,166 @@
+---
+title: "a05"
+editor: visual
+author: "Noor Abuzahriyeh"
+date: "April 1, 2026"
+---
+
+# Introduction
+
+This document, a05, will explore using ggplot2 as well as leaflet to plot data and maps. The added bonus is that there is also additional data wrangling practice built in. For this assignment, the data being explored comes from the Sacramento-San Joaquin Delta Socioecological Monitoring. The data was accessed on March 19, 2026 from the EDI repository at this browser address <https://portal.edirepository.org/nis/mapbrowse?packageid=edi.587.1>.
+
+Analyzing this data can be informative for understanding human visiting patterns when visiting the different areas of these deltas. For example, bigger areas within the delta may see more visitors, indicating that people may like to have more space for fishing or boating. Inferences regarding this can be drawn by analyzing the types of boats people tend to bring to each delta, and there may be correlation between visitors, size of boat, and the time of day people come. Another reason to analzye this data is to draw inferences regarding how human traffic may be impacting the different areas within the delta. For example, areas with a higher amount of visitors may be more polluted, or may have lower fish species diversity.
+
+Therefore, there are both human-motivated reasons as well as environmental reasons more broadly for examining this dataset.
+
+# Set-up
+
+## Packages needed
+
+```{r}
+# Loading packages needed
+library(readr) # to read data
+library(dplyr) # to wrangle data
+library(tidyr) # to also wrangle data
+library(forcats) # makes working with factors easier
+library(ggplot2) # for plotting
+library(leaflet) # interactive maps
+library(DT) # interactive tables
+library(scales) # scale functions for visualization
+library(janitor) # expedite cleaning and exploring data
+library(viridis) # colorblind friendly color palette
+
+# there were some packages that were not installed, so I installed them as the error messages showed up directly in the console as the error messages came up
+```
+
+## Load the data
+
+The data comes from the Sacramento-San Joaquin Delta Socioecological Monitoring
+
+```{r}
+# load the data using here::here after manually downloading data and adding it to directory
+
+delta_visits_raw <- read.csv(here::here("data/raw/Socioecological_monitoring_data.csv"))
+```
+
+## Data exploration and cleanup
+
+```{r}
+# check out column names
+colnames(delta_visits_raw)
+
+# peek at each column and class
+glimpse(delta_visits_raw)
+
+# from when to when?
+range(delta_visits_raw$Date)
+
+# Which time of day?
+unique(delta_visits_raw$Time_of_Day)
+```
+
+Notice that the names of the columns are not all in the same format, with some being mixed case, others snake_case. This needs to be fixed.
+
+```{r}
+# using janitor to transform column names to same format
+
+delta_visits <- delta_visits_raw %>% 
+  janitor::clean_names()
+
+# check out the cleaned up column names -> should be in snake_case
+colnames(delta_visits)
+```
+
+## Getting the data ready for ggplot
+
+```{r}
+# transform the data into long format using pivot_longer to be more ggplot2 compatible
+
+visits_long <- delta_visits %>% # creating new dataframe from cleaned up dataframe
+  pivot_longer(cols = c(sm_boat, med_boat, lrg_boat, bank_angler, scientist, cars), names_to = "visitor_type", values_to = "quantity") %>%  # indicating the names of the columns for R by using cols = 
+  rename(restore_loc = eco_restore_approximate_location) %>% # changing eco_restore_approximate_location to restore_loc for easier typing later on
+  select(-notes) # excluding the notes column from the new visits_long dataset
+
+# Checking the outcome
+head(visits_long)
+```
+
+```{r}
+# calculate vistis by restore_loc , date, and visitor_type
+daily_visits_loc <- visits_long %>% 
+  group_by(restore_loc, date, visitor_type) %>% # grouping by restoration location, date, and visitor type for subsequent summary 
+  summarise(daily_visits = sum(quantity)) # calculates the values in the quantity column based on above groupings
+
+head(daily_visits_loc) # to view the new dataframe
+```
+
+# Analysis
+
+In this section, I will plot the visitor data by type at each restoration location using my favorite plotting strategy from the plotting practice done in class and in the course textbook. I will also plot my favorite type of map. The one I liked the most was colorful and had the x axis start at 0.
+
+```{r}
+ggplot(data = daily_visits_loc,
+       aes(y = restore_loc, x = daily_visits, fill = visitor_type)) + # fill is inside aes, mapped to variable visitor_type, that way each visitor type will show up as a variable in the legend and have its own color
+  geom_col() + # makes a bar graph
+  scale_fill_viridis_d() + # setting color of the bars
+  labs(x = "Number of Visits", # x-axis label
+       y = "Restoration Location", # y-axis label
+       fill = "Type of Visitor", # setting name of legend
+       title = "Total Number of Visits to Delta Restoration Areas by Visitor Type", # setting title of plot
+       subtitle = "Sum of all visits during study period") + # subtitle under title
+  scale_x_continuous(breaks = seq(0,120,20), expand = c(0,0)) + # start, end, increment of tick marks on x-axis. expand makes the bars start at zero without whitespace between the axis label
+  theme_bw() # set color theme of graph
+```
+
+```{r}
+# use ggsave to save plots
+ggsave("C:/Users/musmu/OneDrive/Documents/training_noorabu/import-template-noorabu-prog/data/processed/figures/visit_restore_site_delta_a05.jpg", width = 12, height = 6, units = "in")
+```
+
+## Tables with dt - prep for mapping
+
+```{r}
+# filter for unique locations using distinct function
+locations <- visits_long %>%
+    distinct(restore_loc, .keep_all = TRUE) %>% # .keep_all=TRUE to keep the columns in the new datadrame 
+    select(restore_loc, latitude, longitude) # picking which columns to keep in the data frame
+
+head(locations)
+```
+
+```{r}
+# view the table in an interactive way using datatable
+datatable(locations)
+```
+
+# Maps with leaflet
+
+The following map is my favorite one from the plotting practice assignment done from the textbook.
+
+```{r}
+# using leaflet to make an interactive map
+leaflet(locations) %>% # mapping based on the locations dataframe from above
+    addProviderTiles(providers$Esri.WorldImagery) %>% # had to look this up - this provides a satellite background image from Esri
+    addProviderTiles(providers$CartoDB.PositronOnlyLabels) %>% # had to look this up - this adds labels on top of the satellite images
+    addCircleMarkers( # this adds circles according to the longitude and latitude
+        lng = ~ longitude,
+        lat = ~ latitude,
+        popup = ~ restore_loc, # had to look this up - creates a popup of the restoration location
+        radius = 5, # indicates the radius of the circles
+        # set fill properties
+        fillColor = "salmon", # sets color of circles
+        fillOpacity = 1, # had to look this up - makes circle not see through
+        # set stroke properties
+        stroke = TRUE, # draws a border around circle
+        weight = 0.5, # set thickness of border around circle
+        color = "white", # set color of border of circle
+        opacity = 1) # makes the border solid and not see through
+```
+
+# Discussion
+
+The plot "Total Number of Visits to Delta Restoration Areas by Visitor Type" graphs the different observed types of visitors, from small, medium and large boats, scientists, cars and bank anglers at each of the 10 delta restoration locations. The map above pinpoints the location of each of the restoration locations. Looking at the plot and map simultaneously can lead to interesting observations. For instance, Grizzly Bay and Prospect appear to have the most medium boat and large boat visitors. Looking at the Grizzly Bay location on the map, it appears to be in a bigger area - being in a bay. There appears to be a lot of space for where visitors may be able to visit. However, I do not quite understand why there are a lot of medium and large boat visitors at the Prospect location. It appears to be more north and in a narrow part of a river. It makes me wonder how wide that stretch of river is. Based on the map, it just appears to be mostly fields around Prospect, so perhaps people may come out to boat in that area since it may be more removed from people.
+
+Another interesting location to look at is Sherman Island, as only cars are the observed visitors - no boats and no scientists. Based on the map, Sherman Island does not really appear to be a real island; rather it is a little island or away from the shores of the delta, which would explain why no boats visited Sherman Island. You cannot boat where there is no water! It may be a popular driving trail, or perhaps it has a nice view visible from a car that people may like to park near and observe the delta. A final restoration site I want to point out is Honker Bay/Chipps Island which had the most small boats as visitors compared to the other locations. It is located in the middle of the Sacramento River, not too far from Decker Island. It is interesting that less small boats than large boats visited Decker Island, since it appears closer to the shore than Honker Bay/Chipps Island. What is as expected, however, is that there were no cars at either location, likely because both locations do not appear to be accessible via car.
+
+Overall, having plotted data and a map accessible allows us to question the patterns we observe on the plots given the geographical data that the map presents, as illustrated by some of the points I make above.
