@@ -7,7 +7,7 @@ date: "April 1, 2026"
 
 # Introduction
 
-This document, a05, will explore using ggplot2 as well as leaflet to plot data and maps. The added bonus is that there is also additional data wrangling practice built in. For this assignment, the data being explored comes from the Sacramento-San Joaquin Delta Socioecological Monitoring. The data was accessed on March 19, 2026 from the EDI repository at this browser address <https://portal.edirepository.org/nis/mapbrowse?packageid=edi.587.1>.
+This document, a05, will explore using ggplot2 as well as leaflet to plot data and maps. The added bonus is that there is also additional data wrangling practice built in. For this assignment, the data being explored is delta sociecological data from the Sacramento-San Joaquin Delta.
 
 Analyzing this data can be informative for understanding human visiting patterns when visiting the different areas of these deltas. For example, bigger areas within the delta may see more visitors, indicating that people may like to have more space for fishing or boating. Inferences regarding this can be drawn by analyzing the types of boats people tend to bring to each delta, and there may be correlation between visitors, size of boat, and the time of day people come. Another reason to analzye this data is to draw inferences regarding how human traffic may be impacting the different areas within the delta. For example, areas with a higher amount of visitors may be more polluted, or may have lower fish species diversity.
 
@@ -35,7 +35,7 @@ library(viridis) # colorblind friendly color palette
 
 ## Load the data
 
-The data comes from the Sacramento-San Joaquin Delta Socioecological Monitoring
+For this assignment, the data being explored comes from the Sacramento-San Joaquin Delta Socioecological Monitoring. The data was accessed on March 19, 2026 from the EDI repository at this browser address <https://portal.edirepository.org/nis/mapbrowse?packageid=edi.587.1>.
 
 ```{r}
 # load the data using here::here after manually downloading data and adding it to directory
@@ -43,37 +43,16 @@ The data comes from the Sacramento-San Joaquin Delta Socioecological Monitoring
 delta_visits_raw <- read.csv(here::here("data/raw/Socioecological_monitoring_data.csv"))
 ```
 
-## Data exploration and cleanup
+## Data Wrangling - Getting the data ready for ggplot
 
 ```{r}
-# check out column names
-colnames(delta_visits_raw)
 
-# peek at each column and class
-glimpse(delta_visits_raw)
-
-# from when to when?
-range(delta_visits_raw$Date)
-
-# Which time of day?
-unique(delta_visits_raw$Time_of_Day)
-```
-
-Notice that the names of the columns are not all in the same format, with some being mixed case, others snake_case. This needs to be fixed.
-
-```{r}
-# using janitor to transform column names to same format
+# using janitor to transform column names to same format of snake_case
 
 delta_visits <- delta_visits_raw %>% 
   janitor::clean_names()
 
-# check out the cleaned up column names -> should be in snake_case
-colnames(delta_visits)
-```
 
-## Getting the data ready for ggplot
-
-```{r}
 # transform the data into long format using pivot_longer to be more ggplot2 compatible
 
 visits_long <- delta_visits %>% # creating new dataframe from cleaned up dataframe
@@ -82,7 +61,7 @@ visits_long <- delta_visits %>% # creating new dataframe from cleaned up datafra
   select(-notes) # excluding the notes column from the new visits_long dataset
 
 # Checking the outcome
-head(visits_long)
+#head(visits_long)
 ```
 
 ```{r}
@@ -91,7 +70,7 @@ daily_visits_loc <- visits_long %>%
   group_by(restore_loc, date, visitor_type) %>% # grouping by restoration location, date, and visitor type for subsequent summary 
   summarise(daily_visits = sum(quantity)) # calculates the values in the quantity column based on above groupings
 
-head(daily_visits_loc) # to view the new dataframe
+#head(daily_visits_loc) # to view the new dataframe
 ```
 
 # Analysis
@@ -117,28 +96,16 @@ ggplot(data = daily_visits_loc,
 ggsave("C:/Users/musmu/OneDrive/Documents/training_noorabu/import-template-noorabu-prog/data/processed/figures/visit_restore_site_delta_a05.jpg", width = 12, height = 6, units = "in")
 ```
 
-## Tables with dt - prep for mapping
+# Maps with leaflet
+
+The following map is my favorite one from the plotting practice assignment done from the textbook.
 
 ```{r}
 # filter for unique locations using distinct function
 locations <- visits_long %>%
     distinct(restore_loc, .keep_all = TRUE) %>% # .keep_all=TRUE to keep the columns in the new datadrame 
     select(restore_loc, latitude, longitude) # picking which columns to keep in the data frame
-
-head(locations)
-```
-
-```{r}
-# view the table in an interactive way using datatable
-datatable(locations)
-```
-
-# Maps with leaflet
-
-The following map is my favorite one from the plotting practice assignment done from the textbook.
-
-```{r}
-# using leaflet to make an interactive map
+# using leaflet to make an interactive map based on locations
 leaflet(locations) %>% # mapping based on the locations dataframe from above
     addProviderTiles(providers$Esri.WorldImagery) %>% # had to look this up - this provides a satellite background image from Esri
     addProviderTiles(providers$CartoDB.PositronOnlyLabels) %>% # had to look this up - this adds labels on top of the satellite images
