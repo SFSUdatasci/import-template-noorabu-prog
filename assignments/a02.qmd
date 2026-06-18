@@ -33,7 +33,7 @@ This Quarto document follows the **Week 5 Assignment 2 practice with Tidy Data.*
 
 ## About the data used
 
-I have been culturing Human umbilical cord blood derived erythroid progenitor cells over the past month or so. I have been seeding them at a density of 100,000 cells/mL, and over the course of culturing these cells, I have been recording the number of cells in my total culture to evaluate how well they are expanding. This data is compiled in a data file titled "BIOL806_cell_counts_data.csv".
+I have been culturing Human umbilical cord blood derived erythroid progenitor (HUDEP) cells over the past month or so. I have been seeding them at a density of 100,000 cells/mL, and over the course of culturing these cells, I have been recording the number of cells in my total culture to evaluate how well they are expanding. This data is compiled in a data file titled "BIOL806_cell_counts_data.csv", which is read below.
 
 # Read in the data
 
