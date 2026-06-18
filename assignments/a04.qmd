@@ -1,0 +1,147 @@
+---
+title: "a04 - Using lubridate"
+editor: visual
+author: "Noor Abuzahriyeh"
+date: "March 18, 2026"
+---
+
+# Introduction
+
+This assignment will provide practice with data joins, wrangling data, and will introduce the lubridate package.
+
+Much of this code comes from the tidy-data-joins.qmd practice we did in lab section, and some of it is copied here again to develop the targeted data frame,
+
+## Load libraries needed
+
+```{r}
+library(readr) # for reading file
+library(dplyr) # for wrangling data
+library(here) # load data based on working directory
+library(lubridate)
+```
+
+To understand what lubridate does, can type ?lubridate in the console to find out what it does. After running this, I learned that lubridate makes it easier to work with dates.
+
+# Data
+
+The data used in this assignment is bird survey data collected from local parks in Phoenix, Arizona's metropolitan area. It was accessed from the Environmental Data Initiative (EDI) Data Portal on March 18, 2026. The data itself was collected by Arizona State University researchers to study how the presence of humans impacts birds ecologically and socially.
+
+Read in the data using the here::here function to access data based on working directory rather than having to type out absolute path
+
+```{r}
+# Load the data
+bird_observations <- read.csv(here::here("data/raw/52_pp52_birds_1.csv"))  
+surveys <- read.csv(here::here("data/raw/52_pp52_surveys_1.csv"))  
+sites <- read.csv(here::here("data/raw/52_pp52_sites_1.csv"))
+taxalist <- read.csv(here::here("data/raw/52_pp52_taxalist_1.csv"))
+```
+
+### Taking a quick look at the data to help inform how joins would look later on
+
+Using the dim() function, we can see number of rows by the number of columns
+
+```{r}
+# dim() to see number of rows and columns
+dim(bird_observations) 
+dim(taxalist)
+dim(sites)
+dim(surveys)
+```
+
+# Creating the dataframe needed for a04
+
+First, the instructions from the activity said to rename the notes column in the bird_observations data frame, so we will do that first.
+
+```{r}
+# first, rename notes columns to bird_obs_notes to prevent complexities from the notes column in surveys df.
+bird_observations <- bird_observations %>%
+  rename(bird_obs_notes = notes) # using rename function
+```
+
+### Create bird_obs_subset dataframe
+
+To do that, need to do the following steps:
+
+-   need to use bird_observations as left data frame to include all of its observations
+
+-   join taxalist, sites, and surveys data frames to it
+
+-   limit the columns in the data frame only to "survey_date", "common_name", "park_name", "bird_count", and "observer"
+
+```{r}
+bird_obs_subset <- bird_observations %>% 
+  full_join(y = taxalist, by = "species_id") %>% # joining using species_id key
+  full_join(y = sites, by = "site_id") %>% # joining using sites_id key
+  full_join(y = surveys, by = c("site_id", "survey_id")) %>% # using compound key to join
+  select(survey_date, common_name, park_name, bird_count, observer) # select function to limit to only these column headings
+```
+
+**Now to take a look at the data:**
+
+```{r}
+glimpse(bird_obs_subset)
+```
+
+Indeed, the five columns were added. From the tidy-data-joins.qmd practice, the final step to set up bird_obs_subset was to fix the values in the "observer" column to make them the same format.
+
+```{r}
+unique(bird_obs_subset$observer) # returns the unique values in rows
+```
+
+From the unique function, we see that Josh Burns is the only one in which the format is not first initial.last name. To fix that in the entire observer column, need to mutate it such that it will only edit values that read "Josh Burns" to "J. Burns"
+
+```{r}
+# making the names in the same format
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(observer = if_else(condition = observer == "Josh Burns", true = "J. Burns", false = observer)) # use mutate to change entire column
+
+# check that the mutate worked and that "Josh Burns" is no longer present
+unique(bird_obs_subset$observer)
+```
+
+# Analysis
+
+### Using lubridate to add a new column to bird_obs_subset
+
+```{r}
+# add a new column for month of survey date
+bird_obs_subset <- bird_obs_subset %>% # factor converts it to a number
+  mutate(survey_month = factor(lubridate::month(survey_date))) %>% 
+  # now need to relocate the survey_month column after survey_date
+  dplyr::relocate(survey_month, .after = survey_date) %>%
+  # next step is to filter by parks Lindo, Orme, Palomino,and Sonrisa
+  filter(park_name %in% c("Lindo", "Orme", "Palomino", "Sonrisa")) %>% 
+  group_by(park_name, survey_month) %>%  # to have the data in grouped chunks by the park and month 
+  summarize(total_birds = sum(bird_count))
+ 
+```
+
+Now, to take a look at the final data frame
+
+```{r}
+print.data.frame(bird_obs_subset)
+```
+
+The data frame above has some NA values that I do not like, so I am going to filter them out.
+
+```{r}
+# filtering out NA values
+bird_obs_subset <- bird_obs_subset %>% 
+  filter(!is.na(survey_month), !is.na(total_birds))
+```
+
+See data frame
+
+```{r}
+print.data.frame(bird_obs_subset) # to view the data here
+```
+
+No more NA values!
+
+# Summary
+
+By wrangling the birds_observation data, we are able to generate a condensed data frame that provides the number of birds observed in one of four parks during different months for which survey data was collected. The resultung birds_obs_subset data frame that I generated was as expected for the most part, Because I performed early full joins to ultiamtely generate the bird_obs_subset data frame, I was expecting there to NA values since there would likely be rows that were missing data in the other data frames. What I did not expect, however, is why each park had an NA value as one of their observations in the month column, and I cannot figure out why that would be – perhaps months missing observations for a certain park? Looking at my data, I realize these NA values could be coming from the fact that Lindo, Orme, and Sonrisa parks do not have observations for the month of March, while Palomino park has no bird observations for January.
+
+This data is informative in that we can now look at a glance how many birds there were for the four different parks during the various months for which data was collected. For example, from this new data frame bird_obs_subset, I can see that in January, birds were observed in Lindo, Orme, and Sonrisa parks, with Orme having the highest number of birds at 439 among the three parks during that period. Plotting this data would better help us to uncover any trends regarding time of year and number of birds sighted.
+
+To improve this wrangling process, I think I would have changed the observations in the survey_month column to the name of the months spelled out. This is because I do not foresee operations that could be done on that column that could not be done on a column with qualitative values. For instance, if looking for the mode of the months to see which was most repeated, "December" can likely be produced by the code just as easily as can "12". Another thing I would do is add an averages column. This can tell me on average, how many birds were observed per park, and would condense the data a little further so we are not looking at 5 observations for each park.

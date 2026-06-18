@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Noor Abuzahriyeh">
-<meta name="dcterms.date" content="2026-03-03">
+<meta name="dcterms.date" content="2026-03-11">
 
-<title>a02</title>
+<title>a03 - Practice With Wrangling and Cleaning Data</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -59,16 +59,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="a02_files/libs/clipboard/clipboard.min.js"></script>
-<script src="a02_files/libs/quarto-html/quarto.js"></script>
-<script src="a02_files/libs/quarto-html/popper.min.js"></script>
-<script src="a02_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="a02_files/libs/quarto-html/anchor.min.js"></script>
-<link href="a02_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="a02_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="a02_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="a02_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="a02_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="a03_files/libs/clipboard/clipboard.min.js"></script>
+<script src="a03_files/libs/quarto-html/quarto.js"></script>
+<script src="a03_files/libs/quarto-html/popper.min.js"></script>
+<script src="a03_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="a03_files/libs/quarto-html/anchor.min.js"></script>
+<link href="a03_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="a03_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="a03_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="a03_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="a03_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -82,13 +82,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
-  <li><a href="#about-the-data-used" id="toc-about-the-data-used" class="nav-link" data-scroll-target="#about-the-data-used">About the data used</a></li>
+  <li><a href="#about-the-data" id="toc-about-the-data" class="nav-link" data-scroll-target="#about-the-data">About the data</a></li>
   </ul></li>
-  <li><a href="#read-in-the-data" id="toc-read-in-the-data" class="nav-link" data-scroll-target="#read-in-the-data">Read in the data</a></li>
-  <li><a href="#analysis-on-tidiness-of-data" id="toc-analysis-on-tidiness-of-data" class="nav-link" data-scroll-target="#analysis-on-tidiness-of-data">Analysis on tidiness of data</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
   </ul>
 </nav>
 </div>
@@ -96,8 +96,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">a02</h1>
-<p class="subtitle lead">Practice with Tidy Data Using my Data</p>
+<h1 class="title">a03 - Practice With Wrangling and Cleaning Data</h1>
+<p class="subtitle lead">Analyzing Salmon Catch Data from Alaska</p>
 </div>
 
 
@@ -114,7 +114,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 3, 2026</p>
+      <p class="date">March 11, 2026</p>
     </div>
   </div>
   
@@ -126,97 +126,87 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="setup" class="level2">
-<h2 class="anchored" data-anchor-id="setup">Setup</h2>
-<p>Best practice: put all <code>library()</code> calls in one chunk near the top so collaborators can see what packages are required.</p>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<p>Load the necessary libraries to load the data</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here) </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># to reshape data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr) <span class="co"># to clean data</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr) <span class="co"># to read in data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>This Quarto document follows the <strong>Week 5 Assignment 2 practice with Tidy Data.</strong> In short, tidy data is a framework for organizing data that makes it straightforward and easy to follow. This document will explore whether a data set I have follows the Tidy Data principles. To recap, the three Tidy Data principles are as follows:</p>
-<ol type="1">
-<li><p>Each column has is one variable</p></li>
-<li><p>Each row is one observation.</p></li>
-<li><p>Each cell is one value.</p></li>
-</ol>
-<section id="about-the-data-used" class="level2">
-<h2 class="anchored" data-anchor-id="about-the-data-used">About the data used</h2>
-<p>I have been culturing Human umbilical cord blood derived erythroid progenitor (HUDEP) cells over the past month or so. I have been seeding them at a density of 100,000 cells/mL, and over the course of culturing these cells, I have been recording the number of cells in my total culture to evaluate how well they are expanding. This data is compiled in a data file titled “BIOL806_cell_counts_data.csv”, which is read below.</p>
+<p>It is important to keep track of which types and how many salmon are caught over the years for ecological and consumer reasons. Firstly, it is important to know if less salmon are being caught, as this can be an indication of if over-fishing has occurred. If the amount of salmon being caught has gradually decreased over the years, the Alaskan fishing authorities may limit the amount of a specific salmon species from being caught, or they may ban salmon catching for a given year altogether. This way, we can prevent any specific species from becoming endangered or going extinct. From a consumer standpoint, we can compare the amount of salmon being caught to the amount sold to understand which species are more popular among the population.</p>
+<p>The following analysis that will be done will inform us which species are most abundant in different regions of Alaska by proxy of catch number. The regions included in this study are the Southern Southeast Alaska (SSE), Bristol Bay Management Area (BRB), Northern Southeast Alaska (NSE), Kodiak Management Area (KOD), Prince William Sound Management Area (PWS), and the South Peninsula Subarea (SOP) regions. By checking the salmon catch data from these regions, we would be able to determine which regions have the most salmon or where we are likely to catch more salmon.</p>
 </section>
-</section>
-<section id="read-in-the-data" class="level1">
-<h1>Read in the data</h1>
-<p>Quarto runs R in the same way as a script: objects only exist after the chunks that create them have been run.</p>
-<p>Using <code>here()</code> is a convenient way to build paths relative to your project root (e.g., your <code>.qmd</code> might live in <code>scripts/</code> while data lives in <code>data/</code>).</p>
+<section id="data" class="level1">
+<h1>Data</h1>
+<section id="about-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="about-the-data">About the data</h3>
+<p>The data used in this analysis is the Alaska commercial salmon catches by management region between 1886-1997. It is downloaded from the Knowledge Network for Biocomplexity (KNB), which is an international repository for ecological and environmental data. The data set was published in 2016. I accessed it on March 3, 2026 from this url: <a href="https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1" class="uri">https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1</a></p>
+<section id="for-my-noors-reference-real-analysis-with-full-workflow-is-under-the-analysis-header" class="level4">
+<h4 class="anchored" data-anchor-id="for-my-noors-reference-real-analysis-with-full-workflow-is-under-the-analysis-header">For my (Noor’s) reference: (“Real” analysis with full workflow is under the analysis header)</h4>
+<p>Load in the data to view it in its original form to be able to understand where the resulting mean_region data below will come from.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>cell_counts <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"raw"</span>, <span class="st">"BIOL806_cell_counts_data.csv"</span>)) <span class="co"># use ../ to go up one directory</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>(Optional) Quick peek at the data:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment if you want more inspection output</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">names</span>(cell_counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>catch_original <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">url</span>(<span class="st">"https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1"</span>, <span class="at">method =</span> <span class="st">"libcurl"</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(catch_original)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "date"                                    
-[2] "culture.volume..mL."                     
-[3] "avg.live.cell.count.per.mL"              
-[4] "total.count"                             
-[5] "cells.brought.forward"                   
-[6] "new.culture.volume..mL."                 
-[7] "concentration.of.cells.plated..cells.mL."
-[8] "Notes"                                   </code></pre>
+<pre><code>Rows: 1,708
+Columns: 9
+$ Region       &lt;chr&gt; "SSE", "SSE", "SSE", "SSE", "SSE", "SSE", "SSE", "SSE", "…
+$ Year         &lt;int&gt; 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 189…
+$ Chinook      &lt;chr&gt; "0", "0", "0", "0", "0", "0", "0", "0", "0", "3", "4", "5…
+$ Sockeye      &lt;int&gt; 5, 155, 224, 182, 251, 274, 207, 189, 253, 408, 989, 791,…
+$ Coho         &lt;int&gt; 0, 0, 16, 11, 42, 24, 11, 1, 5, 8, 192, 161, 132, 139, 84…
+$ Pink         &lt;int&gt; 0, 0, 0, 92, 0, 0, 8, 187, 529, 606, 996, 2218, 673, 1545…
+$ Chum         &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 1, 2, 0, 0, 0, 102…
+$ All          &lt;int&gt; 5, 155, 240, 285, 292, 298, 226, 377, 788, 1026, 2181, 31…
+$ notesRegCode &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "", "", "", "…</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a> <span class="co"># str(cell_counts)</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">head</span>(cell_counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>       date culture.volume..mL. avg.live.cell.count.per.mL total.count
-1 1/14/2026                7.00                      41100      288000
-2 1/16/2026                2.50                     283000      708000
-3 1/20/2026                2.50                      32900       82300
-4 1/23/2026                0.61                     694000      423000
-5 1/27/2026                3.30                     975000     3220000
-6  2/2/2026                8.20                     531000     4350000
-  cells.brought.forward new.culture.volume..mL.
-1              2.88e+05                    2.87
-2              3.54e+05                    3.50
-3              4.00e+04                    0.82
-4              6.10e-01                    4.20
-5              5.00e+05                    5.00
-6              1.00e+06                   10.00
-  concentration.of.cells.plated..cells.mL.
-1                                 1.00e+05
-2                                 1.01e+05
-3                                 4.88e+04
-4                                 1.45e-01
-5                                 1.00e+05
-6                                 1.00e+05
-                                                                        Notes
-1                                                        HUDEP C2 vial thawed
-2                                                                            
-3                                        seems i did my math incorrectly here
-4                                                                            
-5                                       at this point, froze down other cells
-6 1/29/2026 Atesh plated 10mL of media for us, don't have the cell count data</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a> <span class="co"># summary(cell_counts)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+</section>
+</section>
+</section>
+<section id="analysis" class="level1">
+<h1>Analysis</h1>
+<p>Here, the data is analyzed to determine the average amount of salmon caught across the six regions mentioned previously.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># checking if my cell count data makes sense by trying some calculations</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>cell_sums <span class="ot">&lt;-</span> <span class="fu">sum</span>(cell_counts<span class="sc">$</span>total.count)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in the data using read.csv method</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># I have a windows CPU, so need to include libcurl method</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>catch_original <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">url</span>(<span class="st">"https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1"</span>, <span class="at">method =</span> <span class="st">"libcurl"</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># find the mean catch data by region</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>mean_region <span class="ot">&lt;-</span> catch_original <span class="sc">%&gt;%</span> <span class="co"># This is defining a new data frame from the catch_original data frame loaded above.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>All, <span class="sc">-</span>notesRegCode) <span class="sc">%&gt;%</span>  <span class="co"># this removes the All and notesRegCode from the orginal catch data since All is a summary statistics column, and notesRegCode includes written observations and empty cells.</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Chinook =</span> <span class="fu">if_else</span>(Chinook <span class="sc">==</span> <span class="st">"I"</span>, <span class="st">"1"</span>, Chinook)) <span class="sc">%&gt;%</span>  <span class="co"># This will change any letter "I" values to "1" values in the Chinook column.</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Chinook =</span> <span class="fu">as.numeric</span>(Chinook)) <span class="sc">%&gt;%</span> <span class="co"># this converts all values in the Chinook column to integers</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span><span class="fu">c</span>(Region,Year), <span class="co"># This changes the data format from wide to long, where the column names become rows and the rows become columns. "Region" and "Year" columns will be excluded.</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"species"</span>, <span class="co"># This creates a new column name called "species" from the columns that are pivoted over.</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"catch"</span>) <span class="sc">%&gt;%</span> <span class="co"># This creates a new column called "catch" from the values in the columns that are pivoted over.</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">catch =</span> catch<span class="sc">*</span><span class="dv">1000</span>) <span class="sc">%&gt;%</span> <span class="co"># This multiplies all the values in the "catch" column by 1000 since the unit of the data is thousands of catches, and it changes the values previously assigned in the catch column to these new values.</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span>  <span class="co"># This splits the data to create groups based on the "Region" column.</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_catch =</span> <span class="fu">mean</span>(catch)) <span class="sc">%&gt;%</span> <span class="co">#  mean(catch) will calculate the mean of the catch data by region since it is grouped together via the pipe, and the results will be added to a column called "mean_catch", as indicated by the assignment operator, "=". Summarize will take those results and create a new table. </span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(mean_catch)) <span class="co"># This will sort the mean_catch data.desc is used to arrange the data in descending order from most on top to least on bottom rather than the default ascending order. </span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mean_region) <span class="co"># This views the resulting data with the analysis performed above.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 2
+  Region mean_catch
+  &lt;chr&gt;       &lt;dbl&gt;
+1 SSE      3184661.
+2 BRB      2709796.
+3 NSE      1825021.
+4 KOD      1528350 
+5 PWS      1419237.
+6 SOP      1110942.</code></pre>
+</div>
 </div>
 </section>
-<section id="analysis-on-tidiness-of-data" class="level1">
-<h1>Analysis on tidiness of data</h1>
-<p>Based on the three tidy data principles, my data is almost tidy! Each column only contains one variable, and all the rows with observations contain only one observation. The part of my data that is not tidy is that not all cells contain a value. In my notes column, which by design is more or less a column meant for optional observations, some cells are empty since I had nothing out of the ordinary or to make note of when I plated those cells. To remedy this, I could add notes to all rows in that column, or simply fill it with N/A or none.</p>
-<p>After some more thought, I realized that the notes column in itself is actually quite problematic when it comes to tidy data. Filling a row with phrases technically makes it so that there is more than one observation in each row. The way I like to think about it is that if I wanted to perform some sort of analysis or graphing of my data including the notes, there would be no operation I could perform that could be informative. I cannot find the average of notes, nor can I make a graph of my notes column.</p>
-<p>Instead, it would be better to include my notes observations in my Quarto document, or to have them as a separate table filled with qualitative observations and not quantitative ones.</p>
-<p>In terms of <strong>primary</strong> keys, the best one to use would be the “date” column, as no values are repeated, unlike in other columns like the “concentration.of.cells.plated..cells.mL” column. I only have one table in this data set, thus there are <strong>no foreign keys</strong> for me to cross reference between two tables.</p>
-</section>
-<section id="conclusion" class="level1">
-<h1>Conclusion</h1>
-<p>In conclusion, tidy data allows for us to more easily follow and analyze our data without having to do too much wrangling. To make my cell counts data tidier, I should remove the notes column and instead include that in a formal report or separate qualitative table. Once that is done, my cell counts data will fulfill the tidy data criteria of having one variable per column, one observation per row, and one value per cell.</p>
+<section id="discussion" class="level1">
+<h1>Discussion</h1>
+<p>The mean_region data table above that resulted from the analysis presents the average number of total salmon caught over the years depending on the management region. While it does not tell us which species was the most abundant, it does tell us which regions overall have the highest number of catches. For example, it appears that in the Southern Southeast Alaska (SSE) region, the average number of salmon caught was the highest, at 3.1846607^{6} compared to the lowest number of catches being in the South Peninsula Subarea (SOP) at 1.1109422^{6} , roughly 3 times less than in the SSE region. This difference necessitates the investigation of latitudinal effects on climate, environment, and salmon habits. Based on the 1999 Regional Information Report No.&nbsp;5J99-05 by Mike Byerly et al.&nbsp;SSE and SOP are at different latitudinal ends in Alaska, which could be an indication that the environment in those waters is less optimal for salmon. Overall, the different regions with Alaska may have more favorable habitat conditions salmon as indicated by the mean amount of salmon that has been caught over the years.</p>
 </section>
 
 </main>
